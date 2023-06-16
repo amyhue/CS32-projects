@@ -1,7 +1,3 @@
-// Project 1: Bad Bunny
-// Amy Hu
-// UID: 405798958
-
 #include <iostream>
 #include <string>
 #include <random>
