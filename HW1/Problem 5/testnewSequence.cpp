@@ -1,6 +1,3 @@
-// Homework 1 - Problem 5
-// Amy Hu
-
 #include "newSequence.h"
 #include "RainfallList.h"
 
