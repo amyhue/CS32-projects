@@ -1,233 +1,86 @@
-#include "newSequence.h"
-#include <iostream>
+#ifndef NEWSEQUENCE_H
+#define NEWSEQUENCE_H
 
-using namespace std;
+#include <string>
 
+using ItemType = unsigned long;
 
-Sequence::Sequence() {
-	
-	m_max_size = DEFAULT_MAX_ITEMS;
-	m_size = 0;
+const int DEFAULT_MAX_ITEMS = 160;
 
-	m_arr = new ItemType[m_max_size];
-}
+class Sequence
+{
 
-Sequence::Sequence(int size) {
-	
-	if(size <0) {
-		cerr << "Cannot create a Sequence that can hold " << size << " items." << endl;
-		exit(1);
-	}
-	else {
-	m_max_size = size;
-	m_size = 0;
-	m_arr = new ItemType[m_max_size];
-	}
-	
-}
+    // const member functions: empty(), size(), get(), find()
+public:
+    // might consider combining constructor implementations
+    Sequence();   // Create an empty sequence (i.e., one whose size() is 0).
+    
+    Sequence(int size); 
+    // constructor with input from the user on max size of the sequence
+    // size should be greater than or equal to 0
 
+    Sequence(const Sequence& other); // copy constructor
+    ~Sequence(); //destructor
 
-Sequence::Sequence(const Sequence& other)
-	:m_max_size(other.m_max_size), m_size(other.m_size)
-{	
-	m_arr = new ItemType[m_max_size];
+    Sequence& operator=(const Sequence& rhs);
+    
+    bool empty() const;  // Return true if the sequence is empty, otherwise false.  
+    int size() const;    // Return the number of items in the sequence.    
+    int insert(int pos, const ItemType& value);
+    // Insert value into the sequence so that it becomes the item at
+    // position pos.  The original item at position pos and those that
+    // follow it end up at positions one greater than they were at before.
+    // Return pos if 0 <= pos <= size() and the value could be
+    // inserted.  (It might not be, if the sequence has a fixed capacity,
+    // e.g., because it's implemented using a fixed-size array.)  Otherwise,
+    // leave the sequence unchanged and return -1.  Notice that
+    // if pos is equal to size(), the value is inserted at the end.
 
-	//copy contents of other
-	for (int i = 0; i < m_size; i++) {
-		*(m_arr + i) = *(other.m_arr + i);
-	}
-}
+    int insert(const ItemType& value);
+    // Let p be the smallest integer such that value <= the item at
+    // position p in the sequence; if no such item exists (i.e.,
+    // value > all items in the sequence), let p be size().  Insert
+    // value into the sequence so that it becomes the item in position
+    // p.  The original item in position p and those that follow it end
+    // up at positions one greater than before.  Return p if the value
+    // was actually inserted.  Return -1 if the value was not inserted
+    // (perhaps because the sequence has a fixed capacity and is full).
 
-Sequence::~Sequence() {
-	
-	delete [] m_arr;
-	m_arr = NULL;
-}
+    bool erase(int pos);
+    // If 0 <= pos < size(), remove the item at position pos from
+    // the sequence (so that all items that followed that item end up at
+    // positions one lower than they were at before), and return true.
+    // Otherwise, leave the sequence unchanged and return false.
 
-
-Sequence& Sequence::operator=(const Sequence& rhs) {
-	if (this != &rhs) {
-		Sequence temp(rhs);
-		swap(temp);
-	}
-	
-	return *this;
-}
-
-
-// Return true if the sequence is empty, otherwise false.
-bool Sequence::empty() const {
-	if (size() == 0)
-		return true;
-	else
-		return false;
-}
-
-// Return the number of items in the sequence.
-int Sequence::size() const {
-	return m_size;
-}
+    int remove(const ItemType& value);
+    // Erase all items from the sequence that == value.  Return the
+    // number of items removed (which will be 0 if no item == value).
 
 
-int Sequence::insert(int pos, const ItemType& value) {
+    bool get(int pos, ItemType& value) const;
+    // If 0 <= pos < size(), copy into value the item in position pos
+    // of the sequence and return true.  Otherwise, leave value unchanged
+    // and return false.
 
-	// make sure there's room in the sequence to add an additional vlaue
-	//if size() is not less than m_max_size, then there is no room at all to add a new value
+    bool set(int pos, const ItemType& value);
+    // If 0 <= pos < size(), replace the item at position pos in the
+    // sequence with value and return true.  Otherwise, leave the sequence
+    // unchanged and return false.
 
-	if (0 <= pos && pos <= size() && size() < m_max_size) {
+    int find(const ItemType& value) const;
+    // Let p be the smallest integer such that value == the item at
+    // position p in the sequence; if no such item exists, let p be -1.
+    // Return p.
 
-		// shift items from pos and those following to one position greater than before
-		for (int i = size(); i > pos; i--)
-			m_arr[i] = m_arr[i - 1];
+    void swap(Sequence& other);
+    // Exchange the contents of this sequence with the other one.
 
-		m_arr[pos] = value;
-		m_size += 1; // size of the sequence increases by 1 when we insert a value
-		return pos;
-	}
-	else return -1;
-}
+    void dump() const;
+private:
 
+    ItemType* m_arr;
+    int m_max_size;
+    int m_size;
+};
 
-int Sequence::insert(const ItemType& value) {
-	int p = size();
-
-	for (int i = 0; i < size(); i++) {
-		if (value <= m_arr[i]) {
-			p = i;
-			break;
-		}
-	}
-
-	return insert(p, value);
-}
-
-bool Sequence::erase(int pos) {
-	if (0 <= pos && pos < size()) {
-
-		// !***WHAT TO DO FOR m_arr[m_size()-1]?
-		//***delete last element or set it to NULL?
-		for (int i = pos; i < size() - 1; i++) {
-			m_arr[i] = m_arr[i + 1];
-		}
-		m_size = m_size - 1;
-		return true;
-	}
-	else return false;
-}
-
-
-int Sequence::remove(const ItemType& value) {
-
-	int eraseCounter = 0;
-	for (int i = 0; i < size(); i++) {
-		if (value == m_arr[i]) {
-			erase(i);
-			eraseCounter++;
-			i--; // because all values will shift "down" and we don't want to skip a value
-		}
-	}
-	return eraseCounter;
-}
-
-
-bool Sequence::get(int pos, ItemType& value) const {
-	if (0 <= pos && pos < size()) {
-		value = m_arr[pos];
-		return true;
-	}
-	else return false;
-}
-
-
-bool Sequence::set(int pos, const ItemType& value) {
-
-	if (0 <= pos && pos < size()) {
-		m_arr[pos] = value;
-		return true;
-	}
-	return false;
-}
-
-
-int Sequence::find(const ItemType& value) const {
-	int p = -1;
-
-	for (int i = 0; i < size(); i++) {
-		if (value == m_arr[i]) {
-			p = i;
-			break;
-		}
-	}
-
-	return p;
-}
-
-
-void Sequence::swap(Sequence& other) {
-	Sequence temp(other);
-	
-	/*for (int i = 0; i < temp.m_size; i++)
-		cerr << temp.m_arr[i] << ", ";
-	cerr << endl << temp.m_arr << endl;
-
-	cerr << endl;
-	for (int i = 0; i < other.m_size; i++)
-		cerr << endl << other.m_arr[i] << ", ";
-	cerr << endl << other.m_arr << endl;
-
-	cerr << "-------------" << endl;*/
-
-	other.~Sequence();
-	other.m_max_size = this->m_max_size;
-	other.m_size = this->m_size;
-	other.m_arr = new ItemType[this->m_max_size];
-	for (int i = 0; i < other.m_size; i++) {
-		*(other.m_arr + i) = *(this->m_arr + i);
-	}
-
-
-	this->~Sequence();
-	this->m_max_size = temp.m_max_size;
-	this->m_size = temp.m_size;
-	this->m_arr = new ItemType[temp.m_max_size];
-	for (int i = 0; i < this->m_size; i++) {
-		*(this->m_arr + i) = *(temp.m_arr + i);
-	}
-	/*other.~Sequence();
-	other.m_max_size = this->m_max_size;
-	other.m_size = this->m_size;
-	other.m_arr = this->m_arr;
-
-	this->~Sequence();
-	this->m_max_size = temp.m_max_size;
-	this->m_size = temp.m_size;
-	this->m_arr = temp.m_arr;*/
-
-	// Why heap error?
-
-	
-	/*for (int i = 0; i < temp.m_size; i++)
-		cerr << temp.m_arr[i] << ", ";
-	cerr << endl<< temp.m_arr <<endl;
-
-	cerr << endl;
-	for (int i = 0; i < other.m_size; i++)
-		cerr << endl << other.m_arr[i] << ", ";
-	cerr << endl << other.m_arr<<endl;
-
-	cerr << endl;
-	for (int i = 0; i < this->m_size; i++)
-		cerr << this->m_arr[i] << ", ";
-	cerr << endl << this ->m_arr<< endl;*/
-	
-
-	
-
-}
-
-void Sequence::dump() const {
-	cerr << "Sequence size: " << m_size << endl;
-	for (int i = 0; i < m_size /*+ 5*/; i++)
-		cerr << m_arr[i] << ", ";
-	cerr << endl << endl;
-}
+#endif
